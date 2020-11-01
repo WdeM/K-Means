@@ -8,20 +8,27 @@ def create_random_list(amount, min_value, max_value):
 
 # generate random positions for k_clusters
 def cluster_positions(k_clusters, min_value, max_value):
-    cluster_set = dict()
+    cluster_dicts = []
     k_clusters = [random.randint(min_value,max_value) for n in range(k_clusters)]
-    for k in k_clusters:
-        cluster_set[k] = []
-    return cluster_set
+    for index, k in enumerate(k_clusters):
+        cluster = {"cluster_index": index, "base_value": k, "values": []}
+        cluster_dicts.append(cluster)
+    return cluster_dicts
 
-def calculate_nearest_cluster(value, cluster_set):
+def calculate_nearest_cluster(value, clusters):
     nearest_cluster = None
-    for cluster in cluster_set:
+    for index,cluster in enumerate(clusters):
         if nearest_cluster == None:
-            nearest_cluster = cluster
-        elif abs(value-cluster) < abs(nearest_cluster-value):
-            nearest_cluster = cluster
+            nearest_cluster = index
+        elif abs(value-cluster["base_value"]) < abs(nearest_cluster-value):
+            nearest_cluster = index
     return nearest_cluster
+
+def mean(lst):
+    try:
+        return int(sum(lst) / len(lst))
+    except:
+        return None
 
 
 if __name__ == "__main__":
@@ -29,20 +36,20 @@ if __name__ == "__main__":
     dataset_size, min_value, max_value = 1000,1,1000
     dataset = create_random_list(dataset_size, min_value, max_value)
     
-    # generate two k-clusters
-    amount_of_clusters = 2
+    # generate n of k-clusters and initiate cluster objects (dicts)
+    amount_of_clusters = 10
     clusters = cluster_positions(amount_of_clusters, 1, 1000)
-
+    
     # Assing each value in dataset to the nearest cluster
     for value in dataset:
         nearest_cluster = calculate_nearest_cluster(value,clusters)
-        clusters[nearest_cluster].append(value)
+        clusters[nearest_cluster]["values"].append(value)
     
-    for index, cluster in enumerate(clusters):
-        print("Cluster "+str(index) + " has positional value of "+str(cluster)+
-           " and "+str(len(clusters[cluster]))+" dataset values assinged to it")
+    # Calculate mean from the assinged values in the cluster and use it as a new
+    # base value
+    for cluster in clusters:
+        average_position = mean(cluster["values"])
+        if average_position != None:
+            cluster.update({"base_value" : average_position})
 
-
-
-
-        
+    print(clusters) 
