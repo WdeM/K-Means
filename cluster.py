@@ -24,12 +24,6 @@ def calculate_nearest_cluster(value, clusters):
             nearest_cluster = index
     return nearest_cluster
 
-def mean(lst):
-    try:
-        return int(sum(lst) / len(lst))
-    except:
-        return None
-
 
 if __name__ == "__main__":
     # Create random list of thousand ints between 1 and 1000.
@@ -48,8 +42,11 @@ if __name__ == "__main__":
     # Calculate mean from the assinged values in the cluster and use it as a new
     # base value
     for cluster in clusters:
-        average_position = mean(cluster["values"])
-        if average_position != None:
+        try:
+            average_position = int(sum(cluster["values"]) / len(cluster["values"]))
             cluster.update({"base_value" : average_position})
+        except:
+            pass
+
 
     print(clusters) 
