@@ -24,12 +24,12 @@ def calculate_nearest_cluster(value, clusters):
 
 if __name__ == "__main__":
     # Create random list of thousand ints between 1 and 1000.
-    dataset_size, min_value, max_value = 1000,1,1000
+    dataset_size, min_value, max_value = 10000,1,10000
     dataset = [random.randint(min_value,max_value) for n in range(dataset_size)]
     
     # generate n of k-clusters and initiate cluster objects (dicts)
-    amount_of_clusters = 2
-    clusters = cluster_positions(amount_of_clusters, 1, 1000)
+    cluster_amount = 3
+    clusters = cluster_positions(cluster_amount, 1, 1000)
     
     # Assing each value in dataset to the nearest cluster
     for value in dataset:
@@ -53,7 +53,11 @@ if __name__ == "__main__":
             if nearest_cluster != cluster["cluster_index"]:
                 cluster["values"].remove(value)
                 clusters[nearest_cluster]["values"].append(value)
-    print(clusters)
+
+    for cluster in clusters:
+        print("Cluster index : " + str(cluster["cluster_index"]))
+        print("Base value : " + str(cluster["base_value"]))
+        print("Amount of data : " + str(len(cluster["values"])))
 
 
 
