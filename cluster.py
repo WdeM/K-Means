@@ -1,9 +1,6 @@
 #!/usr/bin/python3
 import random
 
-def create_random_list(amount, min_value, max_value):
-    random_numbers = [random.randint(min_value,max_value) for n in range(amount)]
-    return tuple(random_numbers)
 
 # generate random positions for k_clusters
 def cluster_positions(k_clusters, min_value, max_value):
@@ -28,7 +25,7 @@ def calculate_nearest_cluster(value, clusters):
 if __name__ == "__main__":
     # Create random list of thousand ints between 1 and 1000.
     dataset_size, min_value, max_value = 1000,1,1000
-    dataset = create_random_list(dataset_size, min_value, max_value)
+    dataset = [random.randint(min_value,max_value) for n in range(dataset_size)]
     
     # generate n of k-clusters and initiate cluster objects (dicts)
     amount_of_clusters = 2
@@ -56,7 +53,7 @@ if __name__ == "__main__":
             if nearest_cluster != cluster["cluster_index"]:
                 cluster["values"].remove(value)
                 clusters[nearest_cluster]["values"].append(value)
-
+    print(clusters)
 
 
 
