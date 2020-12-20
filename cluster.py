@@ -36,27 +36,44 @@ if __name__ == "__main__":
         nearest_cluster = calculate_nearest_cluster(value,clusters)
         clusters[nearest_cluster]["values"].append(value)
     
-    # Calculate mean from the assinged values in the cluster and use it as a new
-    # base value
-    for cluster in clusters:
-        try:
-            average_position = int(sum(cluster["values"]) / len(cluster["values"]))
-            cluster.update({"base_value" : average_position})
-        except:
-            pass
-    
-    # Go through each value in each cluster and see if it still belongs to that
-    # cluster and if not, assinged it to the accurate cluster
-    for cluster in clusters:
-        for value in cluster["values"]:
-            nearest_cluster = calculate_nearest_cluster(value, clusters)
-            if nearest_cluster != cluster["cluster_index"]:
-                cluster["values"].remove(value)
-                clusters[nearest_cluster]["values"].append(value)
+    iteration = 0
+    last_average_positions = []
+    while True:
+        iteration += 1
+
+        # Calculate mean from the assinged values in the cluster and use it as a new
+        # base value
+        average_positions = []
+        for cluster in clusters:
+            try:
+                average_position = int(sum(cluster["values"]) / len(cluster["values"]))
+                average_positions.append(average_position)
+                cluster.update({"base_value" : average_position})
+            except:
+                pass
+        
+        # Go through each value in each cluster and see if it still belongs to that
+        # cluster and if not, assinged it to the accurate cluster
+        for cluster in clusters:
+            for value in cluster["values"]:
+                nearest_cluster = calculate_nearest_cluster(value, clusters)
+                if nearest_cluster != cluster["cluster_index"]:
+                    cluster["values"].remove(value)
+                    clusters[nearest_cluster]["values"].append(value)
+        
+        # Ugly way for making sure, the centroids aren't moving anymore
+        if last_average_positions == average_positions:
+            break
+        else:
+            last_average_positions = average_positions
+
+        print("\n") 
+        print("Iteration "+ str(iteration))
+        print("cluster positions moved accordingly "+str(average_positions))
 
     for cluster in clusters:
-        print("Cluster index : " + str(cluster["cluster_index"]))
-        print("Base value : " + str(cluster["base_value"]))
+        print("\nCluster index : " + str(cluster["cluster_index"]))
+        print("Best cluster position : " + str(cluster["base_value"]))
         print("Amount of data : " + str(len(cluster["values"])))
 
 
