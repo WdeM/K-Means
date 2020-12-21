@@ -21,45 +21,32 @@ def calculate_nearest_cluster(value, clusters):
             nearest_cluster = index
     return nearest_cluster
 
-
-if __name__ == "__main__":
-    # Create random list of thousand ints between 1 and 1000.
-    dataset_size, min_value, max_value = 10000,1,10000
-    dataset = [random.randint(min_value,max_value) for n in range(dataset_size)]
-    
-    # generate n of k-clusters and initiate cluster objects (dicts)
-    cluster_amount = 3
-    clusters = cluster_positions(cluster_amount, 1, 1000)
-    
-    # Assing each value in dataset to the nearest cluster
-    for value in dataset:
-        nearest_cluster = calculate_nearest_cluster(value,clusters)
-        clusters[nearest_cluster]["values"].append(value)
-    
+# find the most optimal center value for each cluster. Values calculated here means
+# the centroids that the datapoints
+def find_cluster_centers(clusters):
     iteration = 0
     last_average_positions = []
+
     while True:
         iteration += 1
-
-        # Calculate mean from the assinged values in the cluster and use it as a new
-        # base value
         average_positions = []
         for cluster in clusters:
             try:
+                # Calculate mean from the assinged values in the cluster and use it as a new
+                # base value
                 average_position = int(sum(cluster["values"]) / len(cluster["values"]))
                 average_positions.append(average_position)
                 cluster.update({"base_value" : average_position})
+
+                # Go through each value in each cluster and see if it still belongs to that
+                # cluster and if not, assinged it to the accurate cluster
+                for value in cluster["values"]:
+                    nearest_cluster = calculate_nearest_cluster(value, clusters)
+                    if nearest_cluster != cluster["cluster_index"]:
+                        cluster["values"].remove(value)
+                        clusters[nearest_cluster]["values"].append(value)
             except:
                 pass
-        
-        # Go through each value in each cluster and see if it still belongs to that
-        # cluster and if not, assinged it to the accurate cluster
-        for cluster in clusters:
-            for value in cluster["values"]:
-                nearest_cluster = calculate_nearest_cluster(value, clusters)
-                if nearest_cluster != cluster["cluster_index"]:
-                    cluster["values"].remove(value)
-                    clusters[nearest_cluster]["values"].append(value)
         
         # Ugly way for making sure, the centroids aren't moving anymore
         if last_average_positions == average_positions:
@@ -67,9 +54,24 @@ if __name__ == "__main__":
         else:
             last_average_positions = average_positions
 
-        print("\n") 
-        print("Iteration "+ str(iteration))
-        print("cluster positions moved accordingly "+str(average_positions))
+    return clusters
+
+
+if __name__ == "__main__":
+    # Create random list of thousand ints between 1 and 10000.
+    dataset_size, min_value, max_value = 10000,1,10000
+    dataset = [random.randint(min_value,max_value) for n in range(dataset_size)]
+    
+    # generate n of k-clusters and initiate cluster objects (dicts)
+    cluster_amount = 3
+    clusters = cluster_positions(cluster_amount, 1, 10000)
+    
+    # Assing each value in dataset to the nearest cluster
+    for value in dataset:
+        nearest_cluster = calculate_nearest_cluster(value,clusters)
+        clusters[nearest_cluster]["values"].append(value)
+    
+    clusters = find_cluster_centers(clusters) 
 
     for cluster in clusters:
         print("\nCluster index : " + str(cluster["cluster_index"]))
