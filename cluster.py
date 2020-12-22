@@ -23,7 +23,7 @@ def calculate_nearest_cluster(value, clusters):
     return nearest_cluster
 
 # find the most optimal center value for each cluster. Values calculated here means
-# the centroids that the datapoints
+# the centroids that the datapoints are grouped by
 def optimize_clusters(clusters):
     iteration = 0
     last_average_positions = []
