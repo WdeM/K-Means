@@ -56,24 +56,24 @@ def optimize_cluster(cluster_set):
             last_average_positions = average_positions
     return cluster_set
 
-# returns multiple sets of clusters where each cluster centroid has been
+# returns multiple clusters where each cluster centroid has been
 # realigned closer to the center of the group, based on mean of the group
-def generate_cluster_sets(set_amount, cluster_amount, dataset, min_value, max_value):
-    cluster_sets = []
+def generate_cluster_set(set_amount, cluster_amount, dataset, min_value, max_value):
+    cluster_set = []
     for i in range(set_amount):
         # generate new cluster positions
-        cluster_set = cluster_positions(cluster_amount, min_value, max_value)
+        clusters = cluster_positions(cluster_amount, min_value, max_value)
 
         # Assing each value in dataset to the nearest cluster
         for value in dataset:
-            nearest_cluster = calculate_nearest_cluster(value,cluster_set)
-            cluster_set[nearest_cluster]["values"].append(value)
+            nearest_cluster = calculate_nearest_cluster(value,clusters)
+            clusters[nearest_cluster]["values"].append(value)
 
         # realign centroids to center of its group
-        cluster_set = optimize_cluster(cluster_set)
-        cluster_sets.append(cluster_set)
+        clusters = optimize_cluster(clusters)
+        cluster_set.append(clusters)
     
-    return cluster_sets
+    return cluster_set
 
 
 if __name__ == "__main__":
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     dataset = [random.randint(min_value,max_value) for n in range(dataset_size)]
     
     # return 10 cluster sets
-    cluster_sets = generate_cluster_sets(10, 3, dataset, min_value, max_value)
+    cluster_set = generate_cluster_set(10, 3, dataset, min_value, max_value)
 
 
     """
