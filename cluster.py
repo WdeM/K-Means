@@ -24,14 +24,14 @@ def calculate_nearest_cluster(value, clusters):
 
 # find the most optimal center value for each cluster. Values calculated here means
 # the centroids that the datapoints
-def optimize_cluster(cluster_set):
+def optimize_clusters(clusters):
     iteration = 0
     last_average_positions = []
 
     while True:
         iteration += 1
         average_positions = []
-        for cluster in cluster_set:
+        for cluster in clusters:
             try:
                 # Calculate mean from the assinged values in the cluster and use it as a new
                 # base value
@@ -42,10 +42,10 @@ def optimize_cluster(cluster_set):
                 # Go through each value in each cluster and see if it still belongs to that
                 # cluster and if not, assinged it to the accurate cluster
                 for value in cluster["values"]:
-                    nearest_cluster = calculate_nearest_cluster(value, cluster_set)
+                    nearest_cluster = calculate_nearest_cluster(value, clusters)
                     if nearest_cluster != cluster["index"]:
                         cluster["values"].remove(value)
-                        cluster_set[nearest_cluster]["values"].append(value)
+                        clusters[nearest_cluster]["values"].append(value)
             except:
                 pass
         
@@ -54,7 +54,7 @@ def optimize_cluster(cluster_set):
             break
         else:
             last_average_positions = average_positions
-    return cluster_set
+    return clusters
 
 # returns multiple clusters where each cluster centroid has been
 # realigned closer to the center of the group, based on mean of the group
@@ -70,7 +70,7 @@ def generate_cluster_set(set_amount, cluster_amount, dataset, min_value, max_val
             clusters[nearest_cluster]["values"].append(value)
 
         # realign centroids to center of its group
-        clusters = optimize_cluster(clusters)
+        clusters = optimize_clusters(clusters)
         cluster_set.append(clusters)
     
     return cluster_set
