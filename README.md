@@ -13,6 +13,8 @@ Loop.
 
 Until centroid positions stop changing.
 
+* Return the most optimized clusters from a set of clusters
+
 ### Missing steps:
 * Derive the best amount of K - clusters for the current distribution of data in P
 
