@@ -8,7 +8,8 @@ def cluster_positions(clusters, min_value, max_value):
     cluster_dicts = []
     clusters = [random.randint(min_value,max_value) for n in range(clusters)]
     for index, k in enumerate(clusters):
-        cluster = {"index": index, "base_value": k, "values": []}
+        cluster = {"index": index, "base_value": k, "values": [],
+                   "avg_distance": 0}
         cluster_dicts.append(cluster)
     return cluster_dicts
 
@@ -57,7 +58,7 @@ def optimize_clusters(clusters):
     return clusters
 
 # returns multiple clusters where each cluster centroid has been
-# realigned closer to the center of the group, based on mean of the group
+# realigned closer to the center of the group based on mean of the group
 def generate_cluster_set(set_amount, cluster_amount, dataset, min_value, max_value):
     cluster_set = []
     for i in range(set_amount):
@@ -75,6 +76,36 @@ def generate_cluster_set(set_amount, cluster_amount, dataset, min_value, max_val
     
     return cluster_set
 
+# return the most optimal clusters from cluster set where the data is most
+# evenly distrubeted around the cluster.
+def return_best_clusters(cluster_set):
+    best_clusters = {"clusters": None, "avg_diff": None}
+    for clusters in cluster_set:
+        # update the average distance for each cluster
+        for cluster in clusters:
+            average_distance = 0
+            for value in cluster["values"]:
+                average_distance += abs(cluster["base_value"]-value)
+            average_distance = average_distance / len(cluster["values"])
+            cluster["avg_distance"] = average_distance
+
+        diffs = []
+        for i, cluster in enumerate(clusters):
+            for j, _cluster in enumerate(clusters):
+                if i != j: 
+                    diffs.append(abs(cluster["avg_distance"]-
+                                    _cluster["avg_distance"]))
+        # average difference between each average_distance, where the smaller
+        # the avg_diff is the better the cluster distribution is
+        avg_diff = sum(diffs)/len(diffs)
+        if best_clusters["avg_diff"] == None:
+            best_clusters["clusters"] = clusters
+            best_clusters["avg_diff"] = avg_diff
+        elif best_clusters["avg_diff"] > avg_diff:
+            best_clusters["clusters"] = clusters
+            best_clusters["avg_diff"] = avg_diff
+    return best_clusters
+
 
 if __name__ == "__main__":
     # Create random list of thousand ints between 1 and 10000.
@@ -82,8 +113,11 @@ if __name__ == "__main__":
     dataset = [random.randint(min_value,max_value) for n in range(dataset_size)]
     
     # return 10 cluster sets
-    cluster_set = generate_cluster_set(10, 3, dataset, min_value, max_value)
-
+    cluster_set = generate_cluster_set(10, 5, dataset, min_value, max_value)
+    best_clusters = return_best_clusters(cluster_set) 
+    for cluster in best_clusters["clusters"]:
+        print(cluster["index"],cluster["base_value"],cluster["avg_distance"])
+        print(len(cluster["values"]))
 
     """
     For frame of reference:
