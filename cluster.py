@@ -4,35 +4,37 @@ import random
 
 
 # generate random positions for k_clusters
-def cluster_positions(clusters, min_value, max_value):
+def cluster_positions(cluster_set, min_value, max_value):
     cluster_dicts = []
-    clusters = [random.randint(min_value,max_value) for n in range(clusters)]
-    for index, k in enumerate(clusters):
+    cluster_set = [random.randint(min_value,max_value) for n in \
+                   range(cluster_set)]
+    
+    for index, k in enumerate(cluster_set):
         cluster = {"index": index, "base_value": k, "values": [],
                    "avg_distance": 0}
         cluster_dicts.append(cluster)
     return cluster_dicts
 
-def calculate_nearest_cluster(value, clusters):
+def calculate_nearest_cluster(value, cluster_set):
     nearest_cluster = None
-    for index,cluster in enumerate(clusters):
+    for index,cluster in enumerate(cluster_set):
         if nearest_cluster == None:
             nearest_cluster = index
         elif abs(value-cluster["base_value"])\
-           < abs(value - clusters[nearest_cluster]["base_value"]):
+           < abs(value - cluster_set[nearest_cluster]["base_value"]):
             nearest_cluster = index
     return nearest_cluster
 
 # find the most optimal center value for each cluster. Values calculated here means
 # the centroids that the datapoints are grouped by
-def optimize_clusters(clusters):
+def optimize_cluster_set(cluster_set):
     iteration = 0
     last_average_positions = []
 
     while True:
         iteration += 1
         average_positions = []
-        for cluster in clusters:
+        for cluster in cluster_set:
             try:
                 # Calculate mean from the assinged values in the cluster and use it as a new
                 # base value
@@ -46,7 +48,7 @@ def optimize_clusters(clusters):
                     nearest_cluster = calculate_nearest_cluster(value, clusters)
                     if nearest_cluster != cluster["index"]:
                         cluster["values"].remove(value)
-                        clusters[nearest_cluster]["values"].append(value)
+                        cluster_set[nearest_cluster]["values"].append(value)
             except:
                 pass
         
@@ -55,34 +57,34 @@ def optimize_clusters(clusters):
             break
         else:
             last_average_positions = average_positions
-    return clusters
+    return cluster_set
 
 # returns multiple clusters where each cluster centroid has been
 # realigned closer to the center of the group based on mean of the group
-def generate_cluster_set(set_amount, cluster_amount, dataset, min_value, max_value):
-    cluster_set = []
+def generate_cluster_group(set_amount, cluster_amount, dataset, min_value, max_value):
+    cluster_group = []
     for i in range(set_amount):
         # generate new cluster positions
-        clusters = cluster_positions(cluster_amount, min_value, max_value)
+        cluster_set = cluster_positions(cluster_amount, min_value, max_value)
 
         # Assing each value in dataset to the nearest cluster
         for value in dataset:
-            nearest_cluster = calculate_nearest_cluster(value,clusters)
-            clusters[nearest_cluster]["values"].append(value)
+            nearest_cluster = calculate_nearest_cluster(value,cluster_set)
+            cluster_set[nearest_cluster]["values"].append(value)
 
         # realign centroids to center of its group
-        clusters = optimize_clusters(clusters)
-        cluster_set.append(clusters)
+        cluster_set = optimize_cluster_set(cluster_set)
+        cluster_group.append(cluster_set)
     
-    return cluster_set
+    return cluster_group
 
 # return the most optimal clusters from cluster set where the data is most
 # evenly distrubeted around the cluster.
-def return_best_clusters(cluster_set):
-    best_clusters = {"clusters": None, "avg_diff": None}
-    for clusters in cluster_set:
+def return_best_cluster_set(cluster_group):
+    best_cluster_set = {"cluster_set": None, "avg_diff": None}
+    for cluster_set in cluster_group:
         # update the average distance for each cluster
-        for cluster in clusters:
+        for cluster in cluster_set:
             average_distance = 0
             for value in cluster["values"]:
                 average_distance += abs(cluster["base_value"]-value)
@@ -90,21 +92,21 @@ def return_best_clusters(cluster_set):
             cluster["avg_distance"] = average_distance
 
         diffs = []
-        for i, cluster in enumerate(clusters):
-            for j, _cluster in enumerate(clusters):
+        for i, cluster in enumerate(cluster_set):
+            for j, _cluster in enumerate(cluster_set):
                 if i != j: 
                     diffs.append(abs(cluster["avg_distance"]-
                                     _cluster["avg_distance"]))
         # average difference between each average_distance, where the smaller
         # the avg_diff is the better the cluster distribution is
         avg_diff = sum(diffs)/len(diffs)
-        if best_clusters["avg_diff"] == None:
-            best_clusters["clusters"] = clusters
-            best_clusters["avg_diff"] = avg_diff
-        elif best_clusters["avg_diff"] > avg_diff:
-            best_clusters["clusters"] = clusters
-            best_clusters["avg_diff"] = avg_diff
-    return best_clusters
+        if best_cluster_set["avg_diff"] == None:
+            best_cluster_set["cluster_set"] = cluster_set
+            best_cluster_set["avg_diff"] = avg_diff
+        elif best_cluster_set["avg_diff"] > avg_diff:
+            best_cluster_set["cluster_set"] = cluster_set
+            best_cluster_set["avg_diff"] = avg_diff
+    return best_cluster_set
 
 
 if __name__ == "__main__":
@@ -112,10 +114,10 @@ if __name__ == "__main__":
     dataset_size, min_value, max_value = 10000,1,10000
     dataset = [random.randint(min_value,max_value) for n in range(dataset_size)]
     
-    # return 10 cluster sets
-    cluster_set = generate_cluster_set(10, 5, dataset, min_value, max_value)
-    best_clusters = return_best_clusters(cluster_set) 
-    for cluster in best_clusters["clusters"]:
+    # return a set of 10 clusters
+    cluster_group = generate_cluster_group(100, 3, dataset, min_value, max_value)
+    best_cluster_set = return_best_cluster_set(cluster_group) 
+    for cluster in best_cluster_set["cluster_set"]:
         print(cluster["index"],cluster["base_value"],cluster["avg_distance"])
         print(len(cluster["values"]))
 
@@ -126,11 +128,9 @@ if __name__ == "__main__":
         - cluster index
         - cluster centroid value ("base_value")
         - the values nearest this cluster centroid value (data)
-    
-    - Clusters object holds multiple cluster objects, where the amount is
-      defined by the amount of cluster used for the overall dataset
-
-    - Cluster_set holds multiple clusters
+        - average distance for values to the cluster centroid    
+    - One cluster set holds multiple individual clusters
+    - One cluster group holds multiple cluster sets
 
     Calculate the average distance from each point to the nearest cluster of
     it's group. As the amount of clusters increase, the average distance for
